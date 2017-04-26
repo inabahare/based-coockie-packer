@@ -5,26 +5,39 @@
 ///////////////
 
 // Define the HX711 pins
-const byte DOUT     = A0;
-const byte PD_SCK   = A1; 
+const byte DOUT     = A2;
+const byte PD_SCK   = A3; 
 
 // Coefficients from the trendline 
 const float a       = 2207.683;
 const float b       = 639177.965;
 
 // Time the pic takes to finish its program [miliseconds]
-const int picTime   = 10;
+const int picTime   = 1;
+
+// Weight to run at
+const int runWeight = 150;
+
+// Weight of boxes
+const int boxWeight = 30; // g
 
 ///////////////
 // VARIABLES //
 ///////////////
 
-// Set up variables
+// PIC Pins
+int   PICRun          = 6;
+int   PICStop         = 5;
+
+// Scale
 HX711 scale;
+
+// Data to manipulate
 long  reading         = 0;
 long  value           = 0;
-int   microcontroller = 5;
-bool  picHasRun       = 0; // This is to stop the Arduino program from running
+
+
+bool  picToRun        = 0; // This is to stop the Arduino program from running
                            // since there is no need check for weight when the boxes
                            // are being switched
 
@@ -40,14 +53,17 @@ long voltToGram(long volt, float a, float b) {
 
 void setup() {
   // Setup output pins
-  pinMode(microcontroller, OUTPUT);
+  pinMode(PICRun, OUTPUT);
+  pinMode(PICStop, OUTPUT);
 
   // Setup scale
   scale.begin(DOUT, PD_SCK);
   scale.tare();
-
+  
   // Setup serial interface
   Serial.begin(9600);
+  Serial.println("Vores program.exe");
+  Serial.println("------------------------------------- \n");
 }
 
 void loop() {
@@ -55,25 +71,35 @@ void loop() {
   reading = scale.read_average(10);
 
   // Convert the readin to grams
-  value = voltToGram(reading, a, b);
+  value = voltToGram(reading, a, b) - 2819 - 43 - 349;
 
-  // Now check if the value is greater than or equal to 500 so the PIC can get working
-  if(value >= 500) {
-    digitalWrite(microcontroller, HIGH);
-    picHasRun = 1;
+  // Detect a box without an LDR
+  if(value >= boxWeight) {
+    // Tell the PIC to start
+    digitalWrite(PICStop, LOW);
+    // There is a box
+    program(value);  
+  } else {
+    // Tell the PIC to stop  
+    digitalWrite(PICStop, HIGH);
+    Serial.println(value);
+    digitalWrite(PICRun, LOW);
   }
-
-  // Since the PIC we might as well just set the signal to low here
-  digitalWrite(microcontroller, LOW);
-
-  scale.power_down();
   
-  // Either pause the Arduino program while boxes are being switched
-  if (picHasRun == 1) {
-    delay(picTime);
-    picHasRun = 0;
-  } 
-  scale.power_up();
 }
 
-
+// The porgram as a seperate function to make it easier to halt it
+void program(long value) {
+  Serial.print("Weight = ");
+  Serial.print(value);
+  Serial.print(" g\t|\t Reading: ");
+  Serial.println(reading);
+  
+  // Now check if the value is greater than or equal to 500 so the PIC can get working
+  if(value >= runWeight) {
+    digitalWrite(PICRun, HIGH);
+    Serial.println("Run\t        |");
+  } else {
+    digitalWrite(PICRun, LOW);
+  }
+}
