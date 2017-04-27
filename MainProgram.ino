@@ -83,7 +83,7 @@ void loop() {
   
 }
 
-// The porgram as a seperate function to make it easier to halt it
+// Program definition to reduce indentation
 void program(long value) {
   Serial.print("Weight = ");
   Serial.print(value);
