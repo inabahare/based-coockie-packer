@@ -16,9 +16,6 @@ const byte PD_SCK   = A3;
 const float a       = 2207.683;
 const float b       = 639177.965;
 
-// Time the pic takes to finish its program [miliseconds]
-const int picTime   = 1;
-
 // Weight to run at
 const int runWeight = 150;
 
@@ -39,11 +36,6 @@ HX711 scale;
 // Data to manipulate
 long  reading         = 0;
 long  value           = 0;
-
-
-bool  picToRun        = 0; // This is to stop the Arduino program from running
-                           // since there is no need check for weight when the boxes
-                           // are being switched
 
 /////////////
 // PROGRAM //
@@ -86,7 +78,6 @@ void loop() {
   } else {
     // Tell the PIC to stop  
     digitalWrite(PICStop, HIGH);
-    Serial.println(value);
     digitalWrite(PICRun, LOW);
   }
   
@@ -102,7 +93,6 @@ void program(long value) {
   // Now check if the value is greater than or equal to 500 so the PIC can get working
   if(value >= runWeight) {
     digitalWrite(PICRun, HIGH);
-    Serial.println("Run\t        |");
   } else {
     digitalWrite(PICRun, LOW);
   }
