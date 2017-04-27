@@ -70,20 +70,21 @@ void loop() {
 
   // Detect a box without an LDR
   if(value >= boxWeight) {
-    // Tell the PIC to start
-    digitalWrite(PICStop, LOW);
-    // There is a box
+    // Run the program
     program(value);  
   } else {
     // Tell the PIC to stop  
-    digitalWrite(PICStop, HIGH);
-    digitalWrite(PICRun, LOW);
+    digitalWrite(PICStop, HIGH); // Stop the motor
+    digitalWrite(PICRun, LOW);   // Don't don the program
   }
-  
 }
 
 // Program definition to reduce indentation
 void program(long value) {
+  // Tell the PIC to start
+  digitalWrite(PICStop, LOW);   // Start the motor
+  
+  // Outout the data in a formatted way
   Serial.print("Weight = ");
   Serial.print(value);
   Serial.print(" g\t|\t Reading: ");
@@ -91,8 +92,10 @@ void program(long value) {
   
   // Now check if the value is greater than or equal to 500 so the PIC can get working
   if(value >= runWeight) {
+    // TEll the PIC to run its program
     digitalWrite(PICRun, HIGH);
   } else {
+    // Tell the PIC to not do anything
     digitalWrite(PICRun, LOW);
   }
 }
