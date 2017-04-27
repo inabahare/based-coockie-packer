@@ -66,7 +66,7 @@ void loop() {
   reading = scale.read_average(10);
 
   // Convert the readin to grams
-  value = voltToGram(reading, a, b) - 2819 - 43 - 349;
+  value = voltToGram(reading, a, b);
 
   // Detect a box without an LDR
   if(value >= boxWeight) {
